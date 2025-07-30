@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - webnet
+
+  backend:
+    build:
+      context: ./flask
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ../badges:/app/../badges:ro
+      - ../certificates:/app/../certificates:ro
+      - ../icons:/app/../icons:ro
+      - ../OlehMykhasiv-CV.pdf:/app/../OlehMykhasiv-CV.pdf:ro
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge 
